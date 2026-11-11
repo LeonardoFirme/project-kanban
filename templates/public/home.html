@@ -1,0 +1,206 @@
+{% extends "public/base.html" %}
+{% load i18n static %}
+
+{% block title %}Kanban | {% trans "Gestão de Projetos" %}{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none opacity-[0.35]"
+         style="background-image:
+            linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+            linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%);">
+    </div>
+
+    <div class="relative max-w-6xl mx-auto px-6 lg:px-8 pt-20 pb-16">
+        <div class="max-w-3xl">
+            <span class="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-500 mb-6">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                {% trans "Sistema ativo" %}
+            </span>
+            <h1 class="text-5xl sm:text-6xl font-extrabold text-gray-900 tracking-tight leading-[1.05] mb-6">
+                {% trans "Gestão de projetos" %}<br>
+                <span class="text-primary-600">{% trans "sem complicação." %}</span>
+            </h1>
+            <p class="text-lg text-gray-500 leading-relaxed mb-10 max-w-2xl">
+                {% trans "Acompanhe projetos, tarefas e equipes em um só lugar. Transparência total sobre o que está sendo feito e por quem." %}
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+                <a href="#projetos" class="inline-flex items-center gap-2 rounded-lg bg-gray-900 px-6 py-3 text-sm font-medium text-white hover:bg-gray-800 transition">
+                    {% trans "Ver Projetos" %}
+                    <span class="material-symbols-outlined text-base">arrow_forward</span>
+                </a>
+                <a href="{% url 'projects:calendar' %}" class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                    <span class="material-symbols-outlined text-base">calendar_month</span>
+                    {% trans "Calendário" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- KPIs -->
+<section class="max-w-6xl mx-auto px-6 lg:px-8 pb-20">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-100 rounded-2xl overflow-hidden border border-gray-100">
+        <div class="bg-white p-8">
+            <div class="flex items-center justify-between mb-6">
+                <span class="material-symbols-outlined text-gray-400">folder</span>
+                <span class="text-xs font-medium text-gray-400">{% trans "Total" %}</span>
+            </div>
+            <p class="text-5xl font-extrabold text-gray-900 tracking-tight">{{ total_projects }}</p>
+            <p class="mt-2 text-sm text-gray-500">{% trans "Projetos" %}</p>
+        </div>
+        <div class="bg-white p-8">
+            <div class="flex items-center justify-between mb-6">
+                <span class="material-symbols-outlined text-gray-400">task_alt</span>
+                <span class="text-xs font-medium text-gray-400">{% trans "Total" %}</span>
+            </div>
+            <p class="text-5xl font-extrabold text-gray-900 tracking-tight">{{ total_tasks }}</p>
+            <p class="mt-2 text-sm text-gray-500">{% trans "Tarefas" %}</p>
+        </div>
+        <div class="bg-white p-8">
+            <div class="flex items-center justify-between mb-6">
+                <span class="material-symbols-outlined text-gray-400">group</span>
+                <span class="text-xs font-medium text-gray-400">{% trans "Total" %}</span>
+            </div>
+            <p class="text-5xl font-extrabold text-gray-900 tracking-tight">{{ total_teams }}</p>
+            <p class="mt-2 text-sm text-gray-500">{% trans "Equipes" %}</p>
+        </div>
+    </div>
+</section>
+
+<!-- PROJETOS -->
+<section id="projetos" class="max-w-6xl mx-auto px-6 lg:px-8 pb-20">
+    <div class="flex items-end justify-between mb-10">
+        <div>
+            <p class="text-xs font-semibold text-primary-600 uppercase tracking-wider mb-2">{% trans "Portfólio" %}</p>
+            <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">{% trans "Projetos em andamento" %}</h2>
+        </div>
+        <span class="text-sm text-gray-400">{{ projects|length }} {% trans "itens" %}</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {% for project in projects %}
+        <a href="{% url 'projects:project_detail' project.pk %}" class="group block bg-white rounded-2xl border border-gray-100 p-7 hover:border-gray-300 hover:shadow-lg transition-all duration-300">
+            <div class="flex items-start justify-between mb-4">
+                <span class="inline-flex items-center gap-1.5 text-xs font-medium
+                    {% if project.status == 'completed' %}text-green-600
+                    {% elif project.status == 'in_progress' %}text-blue-600
+                    {% elif project.status == 'on_hold' %}text-yellow-600
+                    {% else %}text-gray-500{% endif %}">
+                    <span class="w-1.5 h-1.5 rounded-full
+                        {% if project.status == 'completed' %}bg-green-500
+                        {% elif project.status == 'in_progress' %}bg-blue-500
+                        {% elif project.status == 'on_hold' %}bg-yellow-500
+                        {% else %}bg-gray-400{% endif %}"></span>
+                    {{ project.get_status_display }}
+                </span>
+                <span class="material-symbols-outlined text-gray-300 group-hover:text-primary-600 group-hover:translate-x-0.5 transition-all text-base">arrow_outward</span>
+            </div>
+
+            <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition leading-tight">{{ project.name }}</h3>
+            <p class="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-6">{{ project.description|default:_("Sem descrição") }}</p>
+
+            {% if project.owner %}
+            <div class="flex items-center gap-3 mb-5">
+                {% if project.owner.profile.avatar %}
+                <img src="{{ project.owner.profile.avatar.url }}" class="w-7 h-7 rounded-full object-cover" />
+                {% else %}
+                <span class="w-7 h-7 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold">
+                    {{ project.owner.username|first|upper }}
+                </span>
+                {% endif %}
+                <div class="text-xs">
+                    <p class="text-gray-400">{% trans "Responsável" %}</p>
+                    <p class="font-medium text-gray-700">{{ project.owner.username }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="flex items-center justify-between pt-5 border-t border-gray-100">
+                <div class="flex -space-x-2">
+                    {% with members=project.get_unique_members %}
+                        {% for member in members|slice:":4" %}
+                            {% if member.profile.avatar %}
+                            <img src="{{ member.profile.avatar.url }}" title="{{ member.username }}" class="w-7 h-7 rounded-full object-cover border-2 border-white" />
+                            {% else %}
+                            <span title="{{ member.username }}" class="w-7 h-7 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center text-xs font-semibold border-2 border-white">
+                                {{ member.username|first|upper }}
+                            </span>
+                            {% endif %}
+                        {% empty %}
+                        <span class="text-xs text-gray-400">{% trans "Sem membros" %}</span>
+                        {% endfor %}
+                        {% if members|length > 4 %}
+                        <span class="w-7 h-7 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs font-semibold border-2 border-white">+{{ members|length|add:"-4" }}</span>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <span class="text-xs text-gray-400">{{ project.created_at|date:"d/m/Y" }}</span>
+            </div>
+        </a>
+        {% empty %}
+        <div class="col-span-full text-center py-20">
+            <span class="material-symbols-outlined text-5xl text-gray-200 mb-3">folder_off</span>
+            <p class="text-gray-400">{% trans "Nenhum projeto cadastrado." %}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- ESTATÍSTICAS COLAPSÁVEIS -->
+<section class="max-w-6xl mx-auto px-6 lg:px-8 pb-20" x-data="statsSection">
+    <div class="border-t border-gray-100 pt-12">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+            <div>
+                <p class="text-xs font-semibold text-primary-600 uppercase tracking-wider mb-2">{% trans "Análise" %}</p>
+                <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">{% trans "Estatísticas" %}</h2>
+            </div>
+            <button type="button" @click="toggle()" class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition">
+                <span class="material-symbols-outlined text-base" x-text="open ? 'expand_less' : 'analytics'"></span>
+                <span x-text="open ? '{% trans "Ocultar" %}' : '{% trans "Ver Estatísticas" %}'"></span>
+            </button>
+        </div>
+
+        <div x-show="open" x-transition x-cloak class="space-y-5">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div class="bg-white rounded-2xl p-7 border border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-6">{% trans "Projetos por Status" %}</h3>
+                    <div class="h-64"><canvas id="chartProjectsStatus"></canvas></div>
+                </div>
+                <div class="bg-white rounded-2xl p-7 border border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-6">{% trans "Tarefas por Prioridade" %}</h3>
+                    <div class="h-64"><canvas id="chartTasksPriority"></canvas></div>
+                </div>
+                <div class="bg-white rounded-2xl p-7 border border-gray-100">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-6">{% trans "Tarefas por Status" %}</h3>
+                    <div class="h-64"><canvas id="chartTasksStatus"></canvas></div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-7 border border-gray-100">
+                <h3 class="text-sm font-semibold text-gray-900 mb-6">{% trans "Projetos Criados (últimos 6 meses)" %}</h3>
+                <div class="h-64"><canvas id="chartProjectsTimeline"></canvas></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{ chart_projects_status|json_script:"data-projects-status" }}
+{{ chart_tasks_priority|json_script:"data-tasks-priority" }}
+{{ chart_tasks_status|json_script:"data-tasks-status" }}
+{{ chart_projects_timeline|json_script:"data-projects-timeline" }}
+
+<script>
+    window.__i18n = {
+        tasks: '{% trans "Tarefas" %}',
+        projects: '{% trans "Projetos" %}'
+    };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/public_home.js' %}"></script>
+{% endblock %}
